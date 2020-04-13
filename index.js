@@ -101,7 +101,7 @@ app.post('/servipag', async (req, res) => {
   }
 
   return res.json({
-      error: 'Falta alguna bariable.'
+      error: 'Falta alguna variable.'
   })
 })
 
