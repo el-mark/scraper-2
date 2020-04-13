@@ -79,19 +79,22 @@ app.post('/servipag', async (req, res) => {
 
       await page.click(`h4#nom_serv${serviceId}`)
 
-      // await page.waitForSelector(`select#biller_${serviceId}`)
-      await page.select(`select#biller_${serviceId}`, '107'),
-      
-      await page.waitForSelector(`input#input_107`)
-      await page.click('input#input_107')
-      // console.log(req.body.client)
+      const selectId = `biller_${serviceId}`
+      const companyId = await page.evaluate(params => {
+        const options = document.querySelectorAll(`#${params.id}>option`)
+        for (var i = 0; i < options.length; i++) {
+          if (options[i].textContent == params.companyName) {
+            return options[i].getAttribute('value')
+          }
+        }
+      }, {id: selectId, companyName: req.body.company})
+      await page.select(`select#${selectId}`, companyId),
+
+      await page.waitForSelector(`input#input_${companyId}`)
+      await page.click(`input#input_${companyId}`)
       await page.keyboard.type(req.body.client)
-    
-      // await page.waitForSelector(`#next-cart-step-23`)
       await page.click('#next-cart-step-23')
       // await page.waitFor(30000)
-
-      // await page.waitForSelector('section.paymentComponentGeneralFormContact[style=""]')
 
       await page.waitForSelector(`.cost-detail`)
       const amount = await page.$eval('.cost-detail', el => el.innerText)
