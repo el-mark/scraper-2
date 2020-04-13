@@ -52,22 +52,6 @@ app.post('/servipag', async (req, res) => {
 
       await page.waitForSelector('#nom_serv0')
 
-      // const h4s = await page.$eval('h4', el => el.innerText)
-
-      // const getHFours = () => {
-      //   // let hFourArray = []
-      //   // const hFour = document.querySelectorAll("h4")
-      //   // for (var i = 0; i < hFour.length; i++) {
-      //   //   hFourArray.push({
-      //   //     content:  
-      //   //     hFour[i].textContent
-      //   //   })
-      //   // }
-
-      //   return 'hola';
-      // }
-      
-
       const serviceId = await page.evaluate(type => {
         const hFour = document.querySelectorAll("h4")
         for (var i = 0; i < hFour.length; i++) {
@@ -93,7 +77,7 @@ app.post('/servipag', async (req, res) => {
       await page.waitForSelector(`input#input_${companyId}`)
       await page.click(`input#input_${companyId}`)
       await page.keyboard.type(req.body.client)
-      await page.click('#next-cart-step-23')
+      await page.click(`#next-cart-step-${serviceId}`)
       // await page.waitFor(30000)
 
       await page.waitForSelector(`.cost-detail`)
