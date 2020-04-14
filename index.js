@@ -8,20 +8,8 @@ app.use(express.json())                         // for parsing application/json
 app.use(express.urlencoded({ extended: true })) // for parsing application/x-www-form-urlencoded
 
 const PUPPETEER_OPTIONS = {
-  headless: false,
-  args: [
-    '--disable-gpu',
-    '--disable-dev-shm-usage',
-    '--disable-setuid-sandbox',
-    '--timeout=30000',
-    '--no-first-run',
-    '--no-sandbox',
-    '--no-zygote',
-    '--single-process',
-    "--proxy-server='direct://'",
-    '--proxy-bypass-list=*',
-    '--deterministic-fetch',
-  ],
+  headless: true,
+  timeout: 30000
 };
 
 const openConnection = async () => {
@@ -80,15 +68,18 @@ app.post('/servipag', async (req, res) => {
       await page.click(`#next-cart-step-${serviceId}`)
       // await page.waitFor(30000)
 
-      await page.waitForSelector(`.cost-detail`)
+      await page.waitForSelector('.cost-detail')
       const amount = await page.$eval('.cost-detail', el => el.innerText)
+      const date = await page.$eval(`#div_cont${serviceId} .cost h4`, el => el.innerText)
 
       console.log({
-        amount: amount
+        amount: amount,
+        date: date
       })
 
       return res.json({
-        amount: amount
+        amount: amount,
+        date: date
       })
     } catch (error) {
       console.log(error)
@@ -98,11 +89,12 @@ app.post('/servipag', async (req, res) => {
     } finally {
       await closeConnection(page, browser);
     }
+  } else {
+    return res.json({
+        error: 'Falta alguna variable.'
+    })
   }
 
-  return res.json({
-      error: 'Falta alguna variable.'
-  })
 })
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`))
