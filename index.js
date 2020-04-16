@@ -9,7 +9,19 @@ app.use(express.urlencoded({ extended: true })) // for parsing application/x-www
 
 const PUPPETEER_OPTIONS = {
   headless: true,
-  timeout: 30000
+  timeout: 30000,
+  args: [
+    '--disable-gpu',
+    '--disable-dev-shm-usage',
+    '--disable-setuid-sandbox',
+    '--no-first-run',
+    '--no-sandbox',
+    '--no-zygote',
+    '--single-process',
+    "--proxy-server='direct://'",
+    '--proxy-bypass-list=*',
+    '--deterministic-fetch'
+  ]
 };
 
 const openConnection = async () => {
@@ -98,3 +110,7 @@ app.post('/servipag', async (req, res) => {
 })
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`))
+
+module.exports = {
+  app
+};
