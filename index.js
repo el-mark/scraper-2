@@ -80,7 +80,9 @@ app.post('/servipag', async (req, res) => {
       await page.click(`#next-cart-step-${serviceId}`)
       // await page.waitFor(30000)
 
-      await page.waitForSelector('.cost-detail')
+      await page.waitForSelector('.cost-detail', {
+        timeout: 10000
+      })
       const amount = await page.$eval('.cost-detail', el => el.innerText)
       const date = await page.$eval(`#div_cont${serviceId} .cost h4`, el => el.innerText)
 
