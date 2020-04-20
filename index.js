@@ -8,7 +8,7 @@ app.use(express.json())                         // for parsing application/json
 app.use(express.urlencoded({ extended: true })) // for parsing application/x-www-form-urlencoded
 
 const PUPPETEER_OPTIONS = {
-  headless: true,
+  headless: false,
   timeout: 30000,
   args: [
     '--disable-gpu',
@@ -80,21 +80,34 @@ app.post('/servipag', async (req, res) => {
       await page.click(`#next-cart-step-${serviceId}`)
       // await page.waitFor(30000)
 
-      await page.waitForSelector('.cost-detail', {
-        timeout: 10000
-      })
-      const amount = await page.$eval('.cost-detail', el => el.innerText)
-      const date = await page.$eval(`#div_cont${serviceId} .cost h4`, el => el.innerText)
+      try {
+        await page.waitForSelector('.cost-detail', {
+          timeout: 10000
+        })
+        const amount = await page.$eval('.cost-detail', el => el.innerText)
+        const date = await page.$eval(`#div_cont${serviceId} .cost h4`, el => el.innerText)
+        console.log({
+          amount: amount,
+          date: date
+        })
+  
+        return res.json({
+          amount: amount,
+          date: date
+        })
+      } catch (error) {
+        await page.waitForSelector('#help-modal')
 
-      console.log({
-        amount: amount,
-        date: date
-      })
+        const amount = await page.$eval('#help-modal p', el => el.innerText)
+        console.log({
+          amount: amount
+        })
+  
+        return res.json({
+          amount: amount
+        })
+      }
 
-      return res.json({
-        amount: amount,
-        date: date
-      })
     } catch (error) {
       console.log(error)
       return res.json({
