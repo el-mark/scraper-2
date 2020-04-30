@@ -8,7 +8,7 @@ app.use(express.json())                         // for parsing application/json
 app.use(express.urlencoded({ extended: true })) // for parsing application/x-www-form-urlencoded
 
 const PUPPETEER_OPTIONS = {
-  headless: false,
+  headless: true,
   timeout: 30000,
   args: [
     '--disable-gpu',
