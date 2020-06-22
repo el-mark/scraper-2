@@ -5,7 +5,7 @@ node index.js
 
 ## Debug or Enhance
 Run node with debugger
-DEBUG=express:* node index.js
+``DEBUG=express:* node index.js``
 
 Turn headless to false
 
