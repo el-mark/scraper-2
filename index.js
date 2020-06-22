@@ -8,7 +8,7 @@ app.use(express.json())                         // for parsing application/json
 app.use(express.urlencoded({ extended: true })) // for parsing application/x-www-form-urlencoded
 
 const PUPPETEER_OPTIONS = {
-  headless: true,
+  headless: false,
   timeout: 30000,
   args: [
     '--disable-gpu',
@@ -41,7 +41,83 @@ const closeConnection = async (page, browser) => {
 /**
  * Request to servipag
  */
+
 app.post('/servipag', async (req, res) => {
+  const url = 'https://ww3.servipag.com/pagoenlinea/portal/desktop/public/generico'
+
+  if(req.body.type && req.body.company) {
+
+    let { browser, page } = await openConnection();
+    try {
+      await page.goto(url, { waitUntil: 'load' });
+
+      await page.waitForSelector('#buscaempresa')
+      await page.click('#buscaempresa')
+      await page.keyboard.type(req.body.company)
+
+      await page.waitForSelector('#scrollMod li:nth-child(2)')
+      await page.click('#scrollMod li:nth-child(2)')
+
+      await page.waitForSelector('.middle-service')
+
+      const companyId = await page.evaluate(params => {
+        const options = document.querySelectorAll('.middle-service select>option')
+        for (var i = 0; i < options.length; i++) {
+          if (options[i].textContent == params.companyName) {
+            return options[i].getAttribute('value')
+          }
+        }
+      }, {companyName: req.body.company})
+
+      await page.waitForSelector(`input#input_${companyId}`)
+      await page.click(`input#input_${companyId}`)
+      await page.keyboard.type(req.body.client)
+      await page.click('.next-cart-step')
+      // await page.waitFor(30000)
+
+      try {
+        await page.waitForSelector('.cost-detail')
+        const amount = await page.$eval('.cost-detail', el => el.innerText)
+        const date = await page.$eval('.middle-service .cost h4', el => el.innerText)
+        console.log({
+          amount: amount,
+          date: date
+        })
+  
+        return res.json({
+          amount: amount,
+          date: date
+        })
+      } catch (error) {
+        await page.waitForSelector('#help-modal')
+
+        const amount = await page.$eval('#help-modal p', el => el.innerText)
+        console.log({
+          amount: amount
+        })
+  
+        return res.json({
+          amount: amount
+        })
+      }
+
+    } catch (error) {
+      console.log(error)
+      return res.json({
+          error
+      })
+    } finally {
+      await closeConnection(page, browser);
+    }
+  } else {
+    return res.json({
+        error: 'Falta alguna variable.'
+    })
+  }
+
+})
+
+app.post('/servipag-old', async (req, res) => {
   const url = 'https://ww3.servipag.com/pagoenlinea/portal/desktop/public/todas'
 
   if(req.body.client && req.body.type && req.body.company) {
@@ -81,9 +157,7 @@ app.post('/servipag', async (req, res) => {
       // await page.waitFor(30000)
 
       try {
-        await page.waitForSelector('.cost-detail', {
-          timeout: 15000
-        })
+        await page.waitForSelector('.cost-detail')
         const amount = await page.$eval('.cost-detail', el => el.innerText)
         const date = await page.$eval(`#div_cont${serviceId} .cost h4`, el => el.innerText)
         console.log({
