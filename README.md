@@ -1,4 +1,5 @@
 # scraper-2
+The objective of this scraper is to get the client utility debts from Servipag. For example water, energy, gas, etc.
 
 ## Run node
 node index.js
