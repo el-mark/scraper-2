@@ -72,28 +72,50 @@ app.post('/servipag', async (req, res) => {
       // await page.waitFor(30000)
   
       try {
-        await page.waitForSelector('.cost-detail')
-        const amount = await page.$eval('.cost-detail', el => el.innerText)
-        const date = await page.$eval('.middle-service .cost h4', el => el.innerText)
+        await page.waitForSelector('.cost')
+
+        // const amountElements = await page.$$('.cost');
+
+        // for (let i = 0; i < amountElements.length; i++) {
+        //   const amountId = await (await amountElements[i].id);
+        //   console.log(amountId);
+        // }
+
+        const amountElementsIds = await page.evaluate(() => Array.from(document.getElementsByClassName('cost'), e => e.id));
+        
+        async function generateAmountArray () {
+          let amountArray = []
+          for(const elementId of amountElementsIds) {
+            const amount = await page.$eval("#" + elementId + " .cost-detail", el => el.innerText);
+            const date = await page.$eval("#" + elementId + " h4", el => el.innerText);
+
+            amountArray.push([ date, amount ]);
+          }
+          return amountArray
+        }
+
+        const amounts = await generateAmountArray();
+        // const amountElementsIds = await page.$$eval('.cost-detail', element => element.innerText);
+
+        // const amounts = await page.$eval('.cost-detail', el => el.innerText)
+        // const date = await page.$eval('.middle-service .cost h4', el => el.innerText)
         console.log({
-          amount: amount,
-          date: date
+          amounts: amounts
         })
   
         return res.json({
-          amount: amount,
-          date: date
+          amounts: amounts
         })
       } catch (error) {
         await page.waitForSelector('#help-modal')
   
-        const amount = await page.$eval('#help-modal p', el => el.innerText)
+        const message = await page.$eval('#help-modal p', el => el.innerText)
         console.log({
-          amount: amount
+          message: message
         })
   
         return res.json({
-          amount: amount
+          message: message
         })
       }
   
