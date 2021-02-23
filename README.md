@@ -31,4 +31,4 @@ Body (x-www-form-urlencoded):
 ``company: Enel``
 
 ## Google functions upload command
-gcloud functions deploy servipag-scrapping-2 --runtime nodejs8 --trigger-http --project PROJECT_NAME --entry-point app
+``gcloud functions deploy FUNCTION_NAME --runtime nodejs14 --trigger-http --project PROJECT_NAME --entry-point app``
