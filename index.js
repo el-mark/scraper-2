@@ -8,7 +8,7 @@ app.use(express.json())                         // for parsing application/json
 app.use(express.urlencoded({ extended: true })) // for parsing application/x-www-form-urlencoded
 
 const PUPPETEER_OPTIONS = {
-  headless: true,
+  headless: false,
   timeout: 30000,
   args: [
     '--disable-gpu',
@@ -43,35 +43,42 @@ app.post('/servipag', async (req, res) => {
 
   if(req.body.client && req.body.company) {
     const url = 'https://ww3.servipag.com/pagoenlinea/portal/desktop/public/generico'
+    console.log(url);
+    console.log('hola');
     let { browser, page } = await openConnection();
     try {
       await page.goto(url, { waitUntil: 'load' });
   
-      await page.waitForSelector('#buscaempresa')
-      await page.click('#buscaempresa')
+      await page.waitForSelector('.search-input input')
+      await page.click('.search-input input')
       await page.keyboard.type(req.body.company)
   
-      await page.waitForSelector('#scrollMod li:nth-child(2)')
-      await page.click('#scrollMod li:nth-child(2)')
+      await page.waitForSelector('#containerScroll ul li:nth-child(1)')
+      await page.click('#containerScroll ul li:nth-child(1)')
   
-      await page.waitForSelector('.middle-service')
+      // await page.waitForSelector('.middle-service')
   
-      const companyId = await page.evaluate(params => {
-        const options = document.querySelectorAll('.middle-service select>option')
-        for (var i = 0; i < options.length; i++) {
-          if (options[i].textContent == params.companyName) {
-            return options[i].getAttribute('value')
-          }
-        }
-      }, {companyName: req.body.company})
+      // const companyId = await page.evaluate(params => {
+      //   const options = document.querySelectorAll('.middle-service select>option')
+      //   for (var i = 0; i < options.length; i++) {
+      //     if (options[i].textContent == params.companyName) {
+      //       return options[i].getAttribute('value')
+      //     }
+      //   }
+      // }, {companyName: req.body.company})
   
-      await page.waitForSelector(`input#input_${companyId}`)
-      await page.click(`input#input_${companyId}`)
+      await page.waitForSelector(`.input-field input`)
+      await page.click(`.input-field input`)
       await page.keyboard.type(req.body.client)
-      await page.click('.next-cart-step')
+      await page.click('.service-action')
       // await page.waitFor(30000)
   
       try {
+        await page.waitForSelector('.type-list')
+
+        
+
+
         await page.waitForSelector('.cost')
 
         // const amountElements = await page.$$('.cost');
@@ -95,10 +102,12 @@ app.post('/servipag', async (req, res) => {
         }
 
         const amounts = await generateAmountArray();
-        // const amountElementsIds = await page.$$eval('.cost-detail', element => element.innerText);
 
-        // const amounts = await page.$eval('.cost-detail', el => el.innerText)
-        // const date = await page.$eval('.middle-service .cost h4', el => el.innerText)
+
+
+
+
+
         console.log({
           amounts: amounts
         })
@@ -107,9 +116,9 @@ app.post('/servipag', async (req, res) => {
           amounts: amounts
         })
       } catch (error) {
-        await page.waitForSelector('#help-modal')
+        await page.waitForSelector('.modal-content')
   
-        const message = await page.$eval('#help-modal p', el => el.innerText)
+        const message = await page.$eval('.modal-body p', el => el.innerText)
         console.log({
           message: message
         })

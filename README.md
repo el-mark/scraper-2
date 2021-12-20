@@ -10,7 +10,7 @@ node6 - node14
 ## Debug or Enhance
 Run node with debugger
 
-``DEBUG=express:* node index.js``
+``DEBUG=express:* node --trace-warnings index.js``
 
 Turn headless to false
 
