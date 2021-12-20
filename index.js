@@ -8,7 +8,7 @@ app.use(express.json())                         // for parsing application/json
 app.use(express.urlencoded({ extended: true })) // for parsing application/x-www-form-urlencoded
 
 const PUPPETEER_OPTIONS = {
-  headless: false,
+  headless: true,
   timeout: 30000,
   args: [
     '--disable-gpu',
@@ -43,8 +43,7 @@ app.post('/servipag', async (req, res) => {
 
   if(req.body.client && req.body.company) {
     const url = 'https://ww3.servipag.com/pagoenlinea/portal/desktop/public/generico'
-    console.log(url);
-    console.log('hola');
+    // console.log(url);
     let { browser, page } = await openConnection();
     try {
       await page.goto(url, { waitUntil: 'load' });
@@ -76,37 +75,44 @@ app.post('/servipag', async (req, res) => {
       try {
         await page.waitForSelector('.type-list')
 
-        
+        const amountElements = await page.$$('.type-list .item-payment');
 
+        // console.log('debug logg');
+        // console.log(amountElements);
+        // console.log(amountElements.length);
 
-        await page.waitForSelector('.cost')
-
-        // const amountElements = await page.$$('.cost');
-
-        // for (let i = 0; i < amountElements.length; i++) {
-        //   const amountId = await (await amountElements[i].id);
-        //   console.log(amountId);
-        // }
-
-        const amountElementsIds = await page.evaluate(() => Array.from(document.getElementsByClassName('cost'), e => e.id));
-        
         async function generateAmountArray () {
-          let amountArray = []
-          for(const elementId of amountElementsIds) {
-            const amount = await page.$eval("#" + elementId + " .cost-detail", el => el.innerText);
-            const date = await page.$eval("#" + elementId + " h4", el => el.innerText);
 
+          let amountArray = []
+          for (let i = 1; i <= amountElements.length; i++) {
+  
+            const amount = await page.$eval(`.type-list .item-payment:nth-child(${i}) .info span`, el => el.innerText);
+            const date = await page.$eval(`.type-list .item-payment:nth-child(${i}) .cost-value`, el => el.innerText);
+  
             amountArray.push([ date, amount ]);
           }
-          return amountArray
+
+          return amountArray;
+        
         }
 
         const amounts = await generateAmountArray();
 
 
+        // const amountElementsIds = await page.evaluate(() => Array.from(document.getElementsByClassName('cost'), e => e.id));
+        
+        // async function generateAmountArray () {
+        //   let amountArray = []
+        //   for(const elementId of amountElementsIds) {
+        //     const amount = await page.$eval("#" + elementId + " .cost-detail", el => el.innerText);
+        //     const date = await page.$eval("#" + elementId + " h4", el => el.innerText);
 
+        //     amountArray.push([ date, amount ]);
+        //   }
+        //   return amountArray
+        // }
 
-
+        // const amounts = await generateAmountArray();
 
         console.log({
           amounts: amounts
