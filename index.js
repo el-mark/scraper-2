@@ -17,7 +17,8 @@ const PUPPETEER_OPTIONS = {
     '--no-first-run',
     '--no-sandbox',
     '--no-zygote',
-    '--single-process',
+    // '--single-process',
+    '--disable-site-isolation-trials',
     "--proxy-server='direct://'",
     '--proxy-bypass-list=*',
     '--deterministic-fetch'
@@ -86,8 +87,8 @@ app.post('/servipag', async (req, res) => {
           let amountArray = []
           for (let i = 1; i <= amountElements.length; i++) {
   
-            const amount = await page.$eval(`.type-list .item-payment:nth-child(${i}) .info span`, el => el.innerText);
-            const date = await page.$eval(`.type-list .item-payment:nth-child(${i}) .cost-value`, el => el.innerText);
+            const date = await page.$eval(`.type-list .item-payment:nth-child(${i}) .info span`, el => el.innerText);
+            const amount = await page.$eval(`.type-list .item-payment:nth-child(${i}) .cost-value`, el => el.innerText);
   
             amountArray.push([ date, amount ]);
           }
